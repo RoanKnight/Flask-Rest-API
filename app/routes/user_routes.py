@@ -1,0 +1,129 @@
+# FILE: app/routes/user_routes.py
+
+from flask import Blueprint, request, jsonify
+from functools import wraps
+from datetime import datetime, timedelta
+import jwt
+
+from app import db
+from app.models import User, UserRole
+from app.schemas.user_schema import UserSchema
+from app.config import Config
+
+user_routes = Blueprint('user_routes', __name__)
+user_schema = UserSchema()
+
+def token_required(f):
+  @wraps(f)
+  def decorated(*args, **kwargs):
+    auth_header = request.headers.get('Authorization', None)
+    if not auth_header:
+      return jsonify({"message": "Token is missing!"}), 401
+
+    parts = auth_header.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+      return jsonify({"message": "Invalid authorization header format!"}), 401
+
+    token = parts[1]
+    try:
+      data = jwt.decode(token, Config.JWT_USER_TOKEN, algorithms=['HS256'])
+      current_user = User.query.get(data['user_id'])
+      if not current_user:
+        return jsonify({"message": "User not found!"}), 401
+    except jwt.ExpiredSignatureError:
+      return jsonify({"message": "Token has expired!"}), 401
+    except jwt.InvalidTokenError:
+      return jsonify({"message": "Token is invalid!"}), 401
+
+    return f(current_user, *args, **kwargs)
+  return decorated
+
+@user_routes.route('/users', methods=['GET'])
+@token_required
+def get_users(current_user):
+  users = User.query.all()
+  users_data = user_schema.dump(users, many=True)
+  response = {
+      "success": {
+          "users": users_data
+      }
+  }
+  return jsonify(response), 200
+
+@user_routes.route('/users/<int:id>', methods=['GET'])
+@token_required
+def get_user(current_user, id):
+  user = User.query.get(id)
+  if not user:
+    return jsonify({"message": "User not found"}), 404
+
+  user_data = user_schema.dump(user)
+  response = {
+      "success": {
+          "user": user_data
+      }
+  }
+  return jsonify(response), 200
+
+@user_routes.route('/users/showProfile', methods=['GET'])
+@token_required
+def show_profile(current_user):
+  user = User.query.get(current_user.id)
+  if not user:
+    return jsonify({"message": "User not found"}), 404
+
+  user_data = user_schema.dump(user)
+  response = {
+      "success": {
+          "user": user_data
+      }
+  }
+  return jsonify(response), 200
+
+@user_routes.route('/users/update', methods=['PUT'])
+@token_required
+def update_user(current_user):
+  user = User.query.get(current_user.id)
+  if not user:
+    return jsonify({"message": "User not found"}), 404
+
+  data = request.get_json()
+  if not data:
+    return jsonify({"message": "No input data provided"}), 400
+
+  # Update only allowed fields
+  user.name = data.get('name', user.name)
+  user.email = data.get('email', user.email)
+  user.phone_number = data.get('phone_number', user.phone_number)
+  user.address = data.get('address', user.address)
+
+  db.session.commit()
+  user_data = user_schema.dump(user)
+  response = {
+      "success": {
+          "user": user_data
+      }
+  }
+  return jsonify(response), 200
+
+@user_routes.route('/users/delete/<int:id>', methods=['DELETE'])
+@token_required
+def delete_user(current_user, id):
+  user = User.query.get(id)
+  if not user:
+    return jsonify({"message": "User not found"}), 404
+
+  user.deleted = True
+  db.session.commit()
+  return jsonify({"message": "User deleted"}), 200
+
+@user_routes.route('/users/restore/<int:id>', methods=['PUT'])
+@token_required
+def restore_user(current_user, id):
+  user = User.query.get(id)
+  if not user:
+    return jsonify({"message": "User not found"}), 404
+
+  user.deleted = False
+  db.session.commit()
+  return jsonify({"message": "User restored"}), 200
