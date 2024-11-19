@@ -11,7 +11,7 @@ user_schema = UserSchema()
 @user_routes.route('/users', methods=['GET'])
 @token_required
 @role_required(UserRole.DIRECTOR)
-def get_users(current_user):
+def index(current_user):
   users = User.query.all()
   users_data = user_schema.dump(users, many=True)
   response = {
@@ -24,7 +24,7 @@ def get_users(current_user):
 @user_routes.route('/users/<int:id>', methods=['GET'])
 @token_required
 @role_required(UserRole.DIRECTOR)
-def get_user(current_user, id):
+def show(current_user, id):
   user = User.query.get(id)
   if not user:
     return jsonify({"message": "User not found"}), 404

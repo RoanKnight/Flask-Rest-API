@@ -1,3 +1,6 @@
+from app.seeders.user_seeder import seed_users
+from app.seeders.director_seeder import seed_directors
+from app.seeders.customer_seeder import seed_customers
 from app import create_app, db
 import click
 
@@ -8,8 +11,9 @@ def seed_database():
   with app.app_context():
     db.drop_all()
     db.create_all()
-    from app.seeders.user_seeder import seed_users
     seed_users()
+    seed_directors()
+    seed_customers()
     click.echo("Database refreshed and seeded successfully.")
 
 @app.cli.command("drop-tables")

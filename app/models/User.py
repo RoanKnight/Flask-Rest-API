@@ -30,8 +30,8 @@ class User(db.Model):
   deleted: Mapped[bool] = mapped_column(Boolean, default=False)
 
   # One-to-one relationships
-  # customer = relationship("Customer", uselist=False, back_populates="user")
-  # director = relationship("Director", uselist=False, back_populates="user")
+  customer = relationship("Customer", uselist=False, back_populates="user")
+  director = relationship("Director", uselist=False, back_populates="user")
 
   def set_password(self, password: str) -> None:
     self.password_hash = generate_password_hash(password)

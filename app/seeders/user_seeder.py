@@ -8,6 +8,7 @@ def seed_users(total_users=50, director_percentage=20):
 
   users = []
 
+  # Create a specific Test Director
   user1 = User(
       name="Test Director",
       email="director@example.com",
@@ -18,21 +19,24 @@ def seed_users(total_users=50, director_percentage=20):
   user1.set_password("password123")
   users.append(user1)
 
+  # Create a specific Test Customer
   user2 = User(
       name="Test Customer",
       email="customer@example.com",
       phone_number="0987654321",
-      address="456 Customer Ave"
+      address="456 Customer Ave",
+      role=UserRole.CUSTOMER.value
   )
   user2.set_password("password123")
   users.append(user2)
 
-  # Create random users
+  # Create random Directors
   for _ in range(num_directors):
     users.append(create_user(UserRole.DIRECTOR))
 
+  # Create random Customers
   for _ in range(num_customers):
     users.append(create_user(UserRole.CUSTOMER))
 
-  db.session.bulk_save_objects(users)
+  db.session.add_all(users)
   db.session.commit()
