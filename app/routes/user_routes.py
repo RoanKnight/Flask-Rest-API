@@ -1,45 +1,16 @@
-# FILE: app/routes/user_routes.py
-
 from flask import Blueprint, request, jsonify
-from functools import wraps
-from datetime import datetime, timedelta
-import jwt
-
 from app import db
 from app.models import User, UserRole
 from app.schemas.user_schema import UserSchema
 from app.config import Config
+from app.middleware import token_required, role_required
 
 user_routes = Blueprint('user_routes', __name__)
 user_schema = UserSchema()
 
-def token_required(f):
-  @wraps(f)
-  def decorated(*args, **kwargs):
-    auth_header = request.headers.get('Authorization', None)
-    if not auth_header:
-      return jsonify({"message": "Token is missing!"}), 401
-
-    parts = auth_header.split()
-    if len(parts) != 2 or parts[0].lower() != 'bearer':
-      return jsonify({"message": "Invalid authorization header format!"}), 401
-
-    token = parts[1]
-    try:
-      data = jwt.decode(token, Config.JWT_USER_TOKEN, algorithms=['HS256'])
-      current_user = User.query.get(data['user_id'])
-      if not current_user:
-        return jsonify({"message": "User not found!"}), 401
-    except jwt.ExpiredSignatureError:
-      return jsonify({"message": "Token has expired!"}), 401
-    except jwt.InvalidTokenError:
-      return jsonify({"message": "Token is invalid!"}), 401
-
-    return f(current_user, *args, **kwargs)
-  return decorated
-
 @user_routes.route('/users', methods=['GET'])
 @token_required
+@role_required(UserRole.DIRECTOR)
 def get_users(current_user):
   users = User.query.all()
   users_data = user_schema.dump(users, many=True)
@@ -52,6 +23,7 @@ def get_users(current_user):
 
 @user_routes.route('/users/<int:id>', methods=['GET'])
 @token_required
+@role_required(UserRole.DIRECTOR)
 def get_user(current_user, id):
   user = User.query.get(id)
   if not user:
@@ -108,6 +80,7 @@ def update_user(current_user):
 
 @user_routes.route('/users/delete/<int:id>', methods=['DELETE'])
 @token_required
+@role_required(UserRole.DIRECTOR)
 def delete_user(current_user, id):
   user = User.query.get(id)
   if not user:
@@ -119,6 +92,7 @@ def delete_user(current_user, id):
 
 @user_routes.route('/users/restore/<int:id>', methods=['PUT'])
 @token_required
+@role_required(UserRole.DIRECTOR)
 def restore_user(current_user, id):
   user = User.query.get(id)
   if not user:
