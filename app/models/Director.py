@@ -13,3 +13,6 @@ class Director(db.Model):
 
   # One-to-one relationship with User
   user = relationship("User", back_populates="director")
+
+  # One-to-many relationship with Movie
+  movies = relationship("Movie", back_populates="director")

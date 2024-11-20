@@ -15,3 +15,7 @@ class Customer(db.Model):
 
   # One-to-one relationship with User
   user = relationship("User", back_populates="customer")
+
+  # Many-to-many relationship with Movie
+  movies = relationship(
+      "Movie", secondary="customer_movies", back_populates="customers")
