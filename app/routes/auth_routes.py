@@ -3,9 +3,10 @@ from datetime import datetime, timedelta
 import jwt
 
 from app import db
-from app.models import User, UserRole
+from app.models import User, UserRole, Customer
 from app.schemas.user_schema import UserSchema
 from app.config import Config
+from werkzeug.security import generate_password_hash
 
 auth_routes = Blueprint('auth_routes', __name__)
 user_schema = UserSchema()
@@ -18,12 +19,14 @@ def generate_token(user):
   token = jwt.encode(payload, Config.JWT_USER_TOKEN, algorithm='HS256')
   return token
 
-
 @auth_routes.route('/register', methods=['POST'])
 def register():
   data = request.get_json()
   if not data:
     return jsonify({"message": "No input data provided"}), 400
+
+  # Remove date_of_birth from data before validation
+  date_of_birth_str = data.pop('date_of_birth', None)
 
   errors = user_schema.validate(data)
   if errors:
@@ -35,23 +38,35 @@ def register():
   if User.query.filter_by(email=data.get('email')).first():
     return jsonify({"message": "User already exists"}), 400
 
-  role_str = data.get('role', UserRole.CUSTOMER.value)
-  try:
-    role_enum = UserRole(role_str)
-  except ValueError:
-    return jsonify({"message": f"Invalid role: {role_str}"}), 400
-
   user = User(
       name=data.get('name'),
       email=data.get('email'),
       phone_number=data.get('phone_number'),
       address=data.get('address'),
-      role=role_enum
+      password_hash=generate_password_hash(data.get('password'))
   )
-  user.set_password(data.get('password'))
 
-  db.session.add(user)
-  db.session.commit()
+  try:
+    db.session.add(user)
+    db.session.commit()
+  except Exception as e:
+    db.session.rollback()
+    return jsonify({"message": "Error creating user"}), 500
+
+  # Create corresponding entry in Customer table
+  if not date_of_birth_str:
+    return jsonify({"message": "Date of birth is required for customers"}), 400
+  try:
+    date_of_birth = datetime.strptime(date_of_birth_str, '%Y-%m-%d').date()
+  except ValueError:
+    return jsonify({"message": "Invalid date format. Use YYYY-MM-DD."}), 400
+  customer = Customer(user_id=user.id, date_of_birth=date_of_birth)
+  try:
+    db.session.add(customer)
+    db.session.commit()
+  except Exception as e:
+    db.session.rollback()
+    return jsonify({"message": "Error creating customer entry"}), 500
 
   token = generate_token(user)
   user_data = user_schema.dump(user)

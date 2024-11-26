@@ -4,7 +4,7 @@ from app import db
 
 def seed_users(total_users=50, director_percentage=20):
   num_directors = int(total_users * (director_percentage / 100))
-  num_customers = total_users - num_directors
+  num_customers = total_users - num_directors - 3  # Subtract 3 for admin users
 
   users = []
 
@@ -29,6 +29,16 @@ def seed_users(total_users=50, director_percentage=20):
   )
   user2.set_password("password123")
   users.append(user2)
+  
+  user3 = User(
+      name="Test Admin",
+      email="admin@example.com",
+      phone_number="0987654321",
+      address="456 Admin Ave",
+      role=UserRole.ADMIN.value
+  )
+  user3.set_password("password123")
+  users.append(user3)
 
   # Create random Directors
   for _ in range(num_directors):

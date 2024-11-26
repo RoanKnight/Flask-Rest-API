@@ -10,7 +10,7 @@ user_schema = UserSchema()
 
 @user_routes.route('/users', methods=['GET'])
 @token_required
-@role_required(UserRole.DIRECTOR)
+@role_required(UserRole.ADMIN)
 def index(current_user):
   users = User.query.all()
   users_data = user_schema.dump(users, many=True)
@@ -23,7 +23,7 @@ def index(current_user):
 
 @user_routes.route('/users/<int:id>', methods=['GET'])
 @token_required
-@role_required(UserRole.DIRECTOR)
+@role_required(UserRole.ADMIN)
 def show(current_user, id):
   user = User.query.get(id)
   if not user:
@@ -78,76 +78,60 @@ def update_user(current_user):
   }
   return jsonify(response), 200
 
+def mark_user_and_related_records(user, deleted):
+  user.deleted = deleted
+
+  if user.role == UserRole.CUSTOMER:
+    customer = Customer.query.filter_by(user_id=user.id).first()
+    if customer:
+      customer.deleted = deleted
+      # Mark all related CustomerMovie entries
+      customer_movies = CustomerMovie.query.filter_by(
+          customer_id=customer.id).all()
+      for customer_movie in customer_movies:
+        customer_movie.deleted = deleted
+  elif user.role == UserRole.DIRECTOR:
+    director = Director.query.filter_by(user_id=user.id).first()
+    if director:
+      director.deleted = deleted
+      # Mark all related movies
+      movies = Movie.query.filter_by(director_id=director.id).all()
+      for movie in movies:
+        movie.deleted = deleted
+        # Mark all related CustomerMovie entries
+        customer_movies = CustomerMovie.query.filter_by(
+            movie_id=movie.id).all()
+        for customer_movie in customer_movies:
+          customer_movie.deleted = deleted
+
 @user_routes.route('/users/delete/<int:id>', methods=['DELETE'])
 @token_required
-@role_required(UserRole.DIRECTOR)
+@role_required(UserRole.ADMIN)
 def delete_user(current_user, id):
   user = User.query.get(id)
   if not user:
     return jsonify({"message": "User not found"}), 404
 
-  # Mark the user as deleted
-  user.deleted = True
+  # Prevent admins from deleting themselves
+  if user.id == current_user.id and user.role == UserRole.ADMIN:
+    return jsonify({"message": "Admins cannot delete themselves"}), 403
 
-  if user.role == UserRole.CUSTOMER:
-    customer = Customer.query.filter_by(user_id=user.id).first()
-    if customer:
-      customer.deleted = True
-      # Mark all related CustomerMovie entries as deleted
-      customer_movies = CustomerMovie.query.filter_by(
-          customer_id=customer.id).all()
-      for customer_movie in customer_movies:
-        customer_movie.deleted = True
-  elif user.role == UserRole.DIRECTOR:
-    director = Director.query.filter_by(user_id=user.id).first()
-    if director:
-      director.deleted = True
-      # Mark all related movies as deleted
-      movies = Movie.query.filter_by(director_id=director.id).all()
-      for movie in movies:
-        movie.deleted = True
-        # Mark all related CustomerMovie entries as deleted
-        customer_movies = CustomerMovie.query.filter_by(
-            movie_id=movie.id).all()
-        for customer_movie in customer_movies:
-          customer_movie.deleted = True
+  # Mark the user and related records as deleted
+  mark_user_and_related_records(user, True)
 
   db.session.commit()
   return jsonify({"message": "User and related records deleted"}), 200
 
 @user_routes.route('/users/restore/<int:id>', methods=['PUT'])
 @token_required
-@role_required(UserRole.DIRECTOR)
+@role_required(UserRole.ADMIN)
 def restore_user(current_user, id):
   user = User.query.get(id)
   if not user:
     return jsonify({"message": "User not found"}), 404
 
-  # Mark the user as not deleted
-  user.deleted = False
-
-  if user.role == UserRole.CUSTOMER:
-    customer = Customer.query.filter_by(user_id=user.id).first()
-    if customer:
-      customer.deleted = False
-      # Mark all related CustomerMovie entries as not deleted
-      customer_movies = CustomerMovie.query.filter_by(
-          customer_id=customer.id).all()
-      for customer_movie in customer_movies:
-        customer_movie.deleted = False
-  elif user.role == UserRole.DIRECTOR:
-    director = Director.query.filter_by(user_id=user.id).first()
-    if director:
-      director.deleted = False
-      # Mark all related movies as not deleted
-      movies = Movie.query.filter_by(director_id=director.id).all()
-      for movie in movies:
-        movie.deleted = False
-        # Mark all related CustomerMovie entries as not deleted
-        customer_movies = CustomerMovie.query.filter_by(
-            movie_id=movie.id).all()
-        for customer_movie in customer_movies:
-          customer_movie.deleted = False
+  # Mark the user and related records as not deleted
+  mark_user_and_related_records(user, False)
 
   db.session.commit()
   return jsonify({"message": "User and related records restored"}), 200

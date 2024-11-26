@@ -10,7 +10,7 @@ customer_movie_schema = CustomerMovieSchema()
 
 @customer_movie_routes.route('/customerMovies', methods=['GET'])
 @token_required
-@role_required(UserRole.DIRECTOR)
+@role_required(UserRole.ADMIN)
 def index(current_user):
   customer_movies = CustomerMovie.query.all()
   customer_movies_data = customer_movie_schema.dump(customer_movies, many=True)
@@ -23,7 +23,7 @@ def index(current_user):
 
 @customer_movie_routes.route('/customerMovies/<int:id>', methods=['GET'])
 @token_required
-@role_required(UserRole.DIRECTOR)
+@role_required(UserRole.ADMIN)
 def show(current_user, id):
   customer_movie = CustomerMovie.query.get(id)
   if not customer_movie:

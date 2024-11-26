@@ -11,7 +11,7 @@ def seed_customer_movies():
   customer_movies = []
 
   for customer in customers:
-    for movie in faker.random_sample(movies, 3):
+    for movie in faker.random_sample(movies, 2):
       customer_movies.append(create_customer_movie(customer.id, movie.id))
 
   db.session.add_all(customer_movies)
