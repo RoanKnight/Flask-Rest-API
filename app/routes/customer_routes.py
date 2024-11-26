@@ -6,14 +6,17 @@ from app.schemas.movie_schema import MovieSchema
 from app.middleware import token_required, role_required
 from datetime import datetime, timedelta
 
+# Create a Blueprint for customer routes
 customer_routes = Blueprint('customer_routes', __name__)
 customer_schema = CustomerSchema()
 movie_schema = MovieSchema()
 
+# Route to get all customers
 @customer_routes.route('/customers', methods=['GET'])
 @token_required
 @role_required(UserRole.ADMIN)
 def index(current_user):
+  # Query all customers from the database
   customers = Customer.query.all()
   customers_data = customer_schema.dump(customers, many=True)
   response = {
@@ -23,10 +26,12 @@ def index(current_user):
   }
   return jsonify(response), 200
 
+# Route to get a specific customer by ID
 @customer_routes.route('/customers/<int:id>', methods=['GET'])
 @token_required
 @role_required(UserRole.ADMIN)
 def show(current_user, id):
+  # Query the customer by ID
   customer = Customer.query.get(id)
   if not customer:
     return jsonify({"message": "Customer not found"}), 404
@@ -39,10 +44,12 @@ def show(current_user, id):
   }
   return jsonify(response), 200
 
+# Route to show the movies rented by the current customer
 @customer_routes.route('/customers/showMovies', methods=['GET'])
 @token_required
 @role_required(UserRole.CUSTOMER)
 def show_movies(current_user):
+  # Query the current customer by user ID
   customer = Customer.query.filter_by(user_id=current_user.id).first()
   if not customer:
     return jsonify({"message": "Customer not found"}), 404
@@ -57,8 +64,7 @@ def show_movies(current_user):
     movie = Movie.query.get(cm.movie_id)
     if movie:
       movie_data = movie_schema.dump(movie)
-      movie_data['due'] = cm.due.strftime(
-          '%a, %d %b %Y')
+      movie_data['due'] = cm.due.strftime('%a, %d %b %Y')
       movie_data['extended'] = cm.extended
       movies_data.append(movie_data)
 
@@ -69,18 +75,22 @@ def show_movies(current_user):
   }
   return jsonify(response), 200
 
+# Route to update the current customer's information
 @customer_routes.route('/customers/updateCustomer', methods=['PUT'])
 @token_required
 @role_required(UserRole.CUSTOMER)
 def update_customer(current_user):
+  # Get the input data from the request
   data = request.get_json()
   if not data:
     return jsonify({"message": "No input data provided"}), 400
 
+  # Query the current customer by user ID
   customer = Customer.query.filter_by(user_id=current_user.id).first()
   if not customer:
     return jsonify({"message": "Customer not found"}), 404
 
+  # Update the date of birth if provided
   date_of_birth_str = data.get('date_of_birth')
   if date_of_birth_str:
     try:
@@ -98,14 +108,17 @@ def update_customer(current_user):
   }
   return jsonify(response), 200
 
+# Route to rent a movie for the current customer
 @customer_routes.route('/customers/rentMovie', methods=['POST'])
 @token_required
 @role_required(UserRole.CUSTOMER)
 def rent_movie(current_user):
+  # Get the input data from the request
   data = request.get_json()
   if not data:
     return jsonify({"message": "No input data provided"}), 400
 
+  # Query the current customer by user ID
   customer = Customer.query.filter_by(user_id=current_user.id).first()
   if not customer:
     return jsonify({"message": "Customer not found"}), 404
@@ -121,7 +134,7 @@ def rent_movie(current_user):
   if customer_movie:
     return jsonify({"message": "Movie already rented"}), 400
 
-  # Create a new CustomerMovie entry with a due date 7 days from now
+  # Create a new CustomerMovie entry with a due date 30 days from now
   due_date = datetime.now() + timedelta(days=30)
   customer_movie = CustomerMovie(
       customer_id=customer.id,

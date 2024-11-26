@@ -2,9 +2,11 @@ from app.factories.user_factory import create_user
 from app.models import UserRole, User
 from app import db
 
+# Seed users function to create a specific Test Director, Test Customer, and random Directors and Customers
 def seed_users(total_users=50, director_percentage=20):
+  # Calculate the number of Directors and Customers
   num_directors = int(total_users * (director_percentage / 100))
-  num_customers = total_users - num_directors - 3  # Subtract 3 for admin users
+  num_customers = total_users - num_directors
 
   users = []
 

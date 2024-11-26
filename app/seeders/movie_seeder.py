@@ -2,6 +2,7 @@ from app.models import Director, Movie
 from app import db
 from app.factories.movie_factory import create_movie
 
+# Seed movies function to create 3 movies for each director
 def seed_movies():
   directors = Director.query.all()
   movies = []

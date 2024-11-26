@@ -7,14 +7,17 @@ from app.middleware import token_required, role_required
 from datetime import datetime
 import random
 
+# Create a Blueprint for director routes
 director_routes = Blueprint('director_routes', __name__)
 director_schema = DirectorSchema()
 movie_schema = MovieSchema()
 
+# Route to get all directors
 @director_routes.route('/directors', methods=['GET'])
 @token_required
 @role_required(UserRole.ADMIN)
 def index(current_user):
+  # Query all directors from the database
   directors = Director.query.all()
   directors_data = director_schema.dump(directors, many=True)
   response = {
@@ -24,10 +27,12 @@ def index(current_user):
   }
   return jsonify(response), 200
 
+# Route to get a specific director by ID
 @director_routes.route('/directors/<int:id>', methods=['GET'])
 @token_required
 @role_required(UserRole.ADMIN)
 def show(current_user, id):
+  # Query the director by ID
   director = Director.query.get(id)
   if not director:
     return jsonify({"message": "Director not found"}), 404
@@ -40,10 +45,12 @@ def show(current_user, id):
   }
   return jsonify(response), 200
 
+# Route to show the movies created by the current director
 @director_routes.route('/directors/showMovies', methods=['GET'])
 @token_required
 @role_required(UserRole.DIRECTOR)
 def show_movies(current_user):
+  # Query the current director by user ID
   director = Director.query.filter_by(user_id=current_user.id).first()
   if not director:
     return jsonify({"message": "Director not found"}), 404
@@ -51,9 +58,7 @@ def show_movies(current_user):
   # Get all movies for the director
   movies = Movie.query.filter_by(director_id=director.id).all()
 
-  # Serialize the movie details
   movies_data = movie_schema.dump(movies, many=True)
-
   response = {
       "success": {
           "movies": movies_data
@@ -61,6 +66,7 @@ def show_movies(current_user):
   }
   return jsonify(response), 200
 
+# Route to update the current director's information
 @director_routes.route('/directors/updateDirector', methods=['PUT'])
 @token_required
 @role_required(UserRole.DIRECTOR)
@@ -69,10 +75,12 @@ def update_director(current_user):
   if not data:
     return jsonify({"message": "No input data provided"}), 400
 
+  # Query the current director by user ID
   director = Director.query.filter_by(user_id=current_user.id).first()
   if not director:
     return jsonify({"message": "Director not found"}), 404
 
+  # Update the website URL if provided
   website_url = data.get('website_url')
   if website_url:
     director.website_url = website_url
@@ -86,6 +94,7 @@ def update_director(current_user):
   }
   return jsonify(response), 200
 
+# Route to create a new movie for the current director
 @director_routes.route('/directors/createMovie', methods=['POST'])
 @token_required
 @role_required(UserRole.DIRECTOR)
@@ -100,6 +109,7 @@ def create_movie(current_user):
   # Set the year to the current year
   current_year = datetime.now().year
 
+  # Create a new Movie instance
   movie = Movie(
       title=data['title'],
       duration=data['duration'],
