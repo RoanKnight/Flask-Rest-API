@@ -1,3 +1,4 @@
+from flask_cors import CORS
 from app.seeders.user_seeder import seed_users
 from app.seeders.director_seeder import seed_directors
 from app.seeders.customer_seeder import seed_customers
@@ -9,6 +10,9 @@ import os
 
 # Create the Flask application
 app = create_app()
+
+# Enable CORS
+CORS(app)
 
 # Command to seed the database
 @app.cli.command("seed-database")
