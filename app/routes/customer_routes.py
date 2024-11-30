@@ -44,15 +44,20 @@ def show(current_user, id):
   }
   return jsonify(response), 200
 
-# Route to show the movies rented by the current customer
-@customer_routes.route('/customers/showMovies', methods=['GET'])
+@customer_routes.route('/customers/<int:id>/showMovies', methods=['GET'])
 @token_required
-@role_required(UserRole.CUSTOMER)
-def show_movies(current_user):
-  # Query the current customer by user ID
-  customer = Customer.query.filter_by(user_id=current_user.id).first()
-  if not customer:
-    return jsonify({"message": "Customer not found"}), 404
+@role_required(UserRole.CUSTOMER, UserRole.ADMIN)
+def show_movies(current_user, id):
+    # Check if the current user is a customer and if the ID in the URL matches the current user's ID
+  if current_user.role == UserRole.CUSTOMER:
+    customer = Customer.query.filter_by(user_id=current_user.id).first()
+    if not customer or customer.id != id:
+      return jsonify({"message": "Unauthorized access"}), 403
+  else:
+    # For admins, use the provided customer ID
+    customer = Customer.query.get(id)
+    if not customer:
+      return jsonify({"message": "Customer not found"}), 404
 
   # Get all CustomerMovie entries for the customer
   customer_movies = CustomerMovie.query.filter_by(
@@ -76,19 +81,19 @@ def show_movies(current_user):
   return jsonify(response), 200
 
 # Route to update the current customer's information
-@customer_routes.route('/customers/updateCustomer', methods=['PUT'])
+@customer_routes.route('/customers/<int:id>/updateCustomer', methods=['PUT'])
 @token_required
 @role_required(UserRole.CUSTOMER)
-def update_customer(current_user):
+def update_customer(current_user, id):
+    # Check if the ID in the URL matches the current customer's ID
+  customer = Customer.query.filter_by(user_id=current_user.id).first()
+  if not customer or customer.id != id:
+    return jsonify({"message": "Unauthorized access"}), 403
+
   # Get the input data from the request
   data = request.get_json()
   if not data:
     return jsonify({"message": "No input data provided"}), 400
-
-  # Query the current customer by user ID
-  customer = Customer.query.filter_by(user_id=current_user.id).first()
-  if not customer:
-    return jsonify({"message": "Customer not found"}), 404
 
   # Update the date of birth if provided
   date_of_birth_str = data.get('date_of_birth')
@@ -109,19 +114,19 @@ def update_customer(current_user):
   return jsonify(response), 200
 
 # Route to rent a movie for the current customer
-@customer_routes.route('/customers/rentMovie', methods=['POST'])
+@customer_routes.route('/customers/<int:id>/rentMovie', methods=['POST'])
 @token_required
 @role_required(UserRole.CUSTOMER)
-def rent_movie(current_user):
+def rent_movie(current_user, id):
+    # Check if the ID in the URL matches the current customer's ID
+  customer = Customer.query.filter_by(user_id=current_user.id).first()
+  if not customer or customer.id != id:
+    return jsonify({"message": "Unauthorized access"}), 403
+
   # Get the input data from the request
   data = request.get_json()
   if not data:
     return jsonify({"message": "No input data provided"}), 400
-
-  # Query the current customer by user ID
-  customer = Customer.query.filter_by(user_id=current_user.id).first()
-  if not customer:
-    return jsonify({"message": "Customer not found"}), 404
 
   movie_id = data.get('movie_id')
   movie = Movie.query.get(movie_id)

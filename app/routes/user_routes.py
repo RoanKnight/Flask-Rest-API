@@ -43,11 +43,15 @@ def show(current_user, id):
   return jsonify(response), 200
 
 # Route to show the profile of the current user
-@user_routes.route('/users/showProfile', methods=['GET'])
+@user_routes.route('/users/<int:id>/showProfile', methods=['GET'])
 @token_required
-def show_profile(current_user):
+def show_profile_by_id(current_user, id):
+    # Check if the ID in the URL matches the current user's ID
+  if current_user.id != id:
+    return jsonify({"message": "Unauthorized access"}), 403
+
   # Query the current user by ID
-  user = User.query.get(current_user.id)
+  user = User.query.get(id)
   if not user:
     return jsonify({"message": "User not found"}), 404
 
@@ -59,12 +63,16 @@ def show_profile(current_user):
   }
   return jsonify(response), 200
 
-# Route to update the current user's information
-@user_routes.route('/users/update', methods=['PUT'])
+# Route to update a the current user's profile
+@user_routes.route('/users/<int:id>/update', methods=['PUT'])
 @token_required
-def update_user(current_user):
+def update_user(current_user, id):
+    # Check if the ID in the URL matches the current user's ID
+  if current_user.id != id:
+    return jsonify({"message": "Unauthorized access"}), 403
+
   # Query the current user by ID
-  user = User.query.get(current_user.id)
+  user = User.query.get(id)
   if not user:
     return jsonify({"message": "User not found"}), 404
 
@@ -115,7 +123,7 @@ def mark_user_and_related_records(user, deleted):
           customer_movie.deleted = deleted
 
 # Route to delete a user and related records
-@user_routes.route('/users/delete/<int:id>', methods=['DELETE'])
+@user_routes.route('/users/<int:id>/delete', methods=['DELETE'])
 @token_required
 @role_required(UserRole.ADMIN)
 def delete_user(current_user, id):
@@ -135,7 +143,7 @@ def delete_user(current_user, id):
   return jsonify({"message": "User and related records deleted"}), 200
 
 # Route to restore a user and related records
-@user_routes.route('/users/restore/<int:id>', methods=['PUT'])
+@user_routes.route('/users/<int:id>/restore', methods=['PUT'])
 @token_required
 @role_required(UserRole.ADMIN)
 def restore_user(current_user, id):

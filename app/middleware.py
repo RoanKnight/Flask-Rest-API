@@ -35,13 +35,13 @@ def token_required(f):
     return f(current_user, *args, **kwargs)
   return decorated
 
-# Decorator to check if the current user has the required role
-def role_required(role):
+# Decorator to check if the current user has one of the required roles
+def role_required(*roles):
   def decorator(f):
     @wraps(f)
     def decorated_function(current_user, *args, **kwargs):
-      # Check if the user's role matches the required role
-      if current_user.role != role:
+      # Check if the user's role matches one of the required roles
+      if current_user.role not in roles:
         return jsonify({"message": "You do not have permission to access this resource."}), 403
       return f(current_user, *args, **kwargs)
     return decorated_function

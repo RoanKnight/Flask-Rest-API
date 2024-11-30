@@ -46,14 +46,13 @@ def show(current_user, id):
   return jsonify(response), 200
 
 # Route to show the movies created by the current director
-@director_routes.route('/directors/showMovies', methods=['GET'])
+@director_routes.route('/directors/<int:id>/showMovies', methods=['GET'])
 @token_required
-@role_required(UserRole.DIRECTOR)
-def show_movies(current_user):
-  # Query the current director by user ID
+def show_movies(current_user, id):
+    # Check if the ID in the URL matches the current director's ID
   director = Director.query.filter_by(user_id=current_user.id).first()
-  if not director:
-    return jsonify({"message": "Director not found"}), 404
+  if not director or director.id != id:
+    return jsonify({"message": "Unauthorized access"}), 403
 
   # Get all movies for the director
   movies = Movie.query.filter_by(director_id=director.id).all()
@@ -67,18 +66,18 @@ def show_movies(current_user):
   return jsonify(response), 200
 
 # Route to update the current director's information
-@director_routes.route('/directors/updateDirector', methods=['PUT'])
+@director_routes.route('/directors/<int:id>/updateDirector', methods=['PUT'])
 @token_required
 @role_required(UserRole.DIRECTOR)
-def update_director(current_user):
+def update_director(current_user, id):
+  # Check if the ID in the URL matches the current director's ID
+  director = Director.query.filter_by(user_id=current_user.id).first()
+  if not director or director.id != id:
+    return jsonify({"message": "Unauthorized access"}), 403
+
   data = request.get_json()
   if not data:
     return jsonify({"message": "No input data provided"}), 400
-
-  # Query the current director by user ID
-  director = Director.query.filter_by(user_id=current_user.id).first()
-  if not director:
-    return jsonify({"message": "Director not found"}), 404
 
   # Update the website URL if provided
   website_url = data.get('website_url')
@@ -95,10 +94,15 @@ def update_director(current_user):
   return jsonify(response), 200
 
 # Route to create a new movie for the current director
-@director_routes.route('/directors/createMovie', methods=['POST'])
+@director_routes.route('/directors/<int:id>/createMovie', methods=['POST'])
 @token_required
 @role_required(UserRole.DIRECTOR)
-def create_movie(current_user):
+def create_movie(current_user, id):
+  # Check if the ID in the URL matches the current director's ID
+  director = Director.query.filter_by(user_id=current_user.id).first()
+  if not director or director.id != id:
+    return jsonify({"message": "Unauthorized access"}), 403
+
   data = request.get_json()
   if not data:
     return jsonify({"message": "No input data provided"}), 400
@@ -115,7 +119,7 @@ def create_movie(current_user):
       duration=data['duration'],
       rating=rating,
       year=current_year,
-      director_id=current_user.id
+      director_id=director.id
   )
   db.session.add(movie)
   db.session.commit()
