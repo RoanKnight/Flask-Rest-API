@@ -1,0 +1,36 @@
+tags:
+  - Movies
+security:
+  - Bearer: []
+responses:
+  200:
+    description: A list of movies
+    schema:
+      type: array
+      items:
+        $ref: '#/definitions/Movie'
+definitions:
+  Movie:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 1
+      title:
+        type: string
+        example: "Movie Title"
+      duration:
+        type: integer
+        example: 120
+      rating:
+        type: integer
+        example: 7
+      year:
+        type: integer
+        example: 2024
+      director_id:
+        type: integer
+        example: 1
+      deleted:
+        type: boolean
+        example: false

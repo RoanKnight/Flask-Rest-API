@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flasgger import swag_from
 from app import db
 from app.models import Movie, UserRole
 from app.schemas.movie_schema import MovieSchema
@@ -11,7 +12,8 @@ movie_schema = MovieSchema()
 # Route to get all movies
 @movie_routes.route('/movies', methods=['GET'])
 @token_required
-@role_required(UserRole.ADMIN)
+@role_required(UserRole.ADMIN, UserRole.CUSTOMER)
+@swag_from('../../docs/movies/index.yml')
 def index(current_user):
   # Query all movies from the database
   movies = Movie.query.all()
@@ -27,6 +29,7 @@ def index(current_user):
 @movie_routes.route('/movies/<int:id>', methods=['GET'])
 @token_required
 @role_required(UserRole.ADMIN)
+@swag_from('../../docs/movies/show.yml')
 def show(current_user, id):
   # Query the movie by ID
   movie = Movie.query.get(id)

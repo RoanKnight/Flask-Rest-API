@@ -1,0 +1,21 @@
+tags:
+  - CustomerMovies
+security:
+  - Bearer: []
+parameters:
+  - name: id
+    in: path
+    required: true
+    type: integer
+    description: The ID of the customer-movie relationship to retrieve
+responses:
+  200:
+    description: A customer-movie object
+    schema:
+      $ref: '#/definitions/CustomerMovie'
+  404:
+    description: CustomerMovie not found
+  401:
+    description: Unauthorized
+  403:
+    description: Forbidden

@@ -24,6 +24,7 @@ def generate_token(user):
 
 # Route to handle user registration
 @auth_routes.route('/register', methods=['POST'])
+@swag_from('../../docs/auth/register.yml')
 def register():
   data = request.get_json()
   if not data:
@@ -93,7 +94,7 @@ def register():
 
 # Route to handle user login
 @auth_routes.route('/login', methods=['POST'])
-# @swag_from('../../docs/auth.yml')
+@swag_from('../../docs/auth/login.yml')
 def login():
   data = request.get_json()
   if not data:

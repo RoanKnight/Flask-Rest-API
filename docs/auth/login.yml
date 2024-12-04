@@ -1,0 +1,73 @@
+tags:
+  - Authentication
+security:
+  - Bearer: []
+description: Endpoint for user login to obtain a JWT token.
+parameters:
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      properties:
+        email:
+          type: string
+          example: john@example.com
+        password:
+          type: string
+          example: password123
+responses:
+  200:
+    description: Successful login
+    schema:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            token:
+              type: string
+              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            user:
+              $ref: '#/definitions/User'
+  400:
+    description: Bad request
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "No input data provided"
+  401:
+    description: Unauthorized
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Invalid email or password"
+definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 1
+      name:
+        type: string
+        example: John Doe
+      email:
+        type: string
+        example: admin@example.com
+      phone_number:
+        type: string
+        example: '123-456-7890'
+      address:
+        type: string
+        example: '123 Main St'
+      role:
+        type: string
+        example: 'Customer'
+      deleted:
+        type: boolean
+        example: false
