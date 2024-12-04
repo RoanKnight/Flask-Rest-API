@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flasgger import swag_from
 from app import db
 from app.models import UserRole, Director, Movie
 from app.schemas.director_schema import DirectorSchema
@@ -16,6 +17,7 @@ movie_schema = MovieSchema()
 @director_routes.route('/directors', methods=['GET'])
 @token_required
 @role_required(UserRole.ADMIN)
+@swag_from('../../docs/directors/index.yml')
 def index(current_user):
   # Query all directors from the database
   directors = Director.query.all()
@@ -31,6 +33,7 @@ def index(current_user):
 @director_routes.route('/directors/<int:id>', methods=['GET'])
 @token_required
 @role_required(UserRole.ADMIN)
+@swag_from('../../docs/directors/show.yml')
 def show(current_user, id):
   # Query the director by ID
   director = Director.query.get(id)
@@ -48,6 +51,7 @@ def show(current_user, id):
 # Route to show the movies created by the current director
 @director_routes.route('/directors/<int:id>/showMovies', methods=['GET'])
 @token_required
+@swag_from('../../docs/directors/showMovies.yml')
 def show_movies(current_user, id):
     # Check if the ID in the URL matches the current director's ID
   director = Director.query.filter_by(user_id=current_user.id).first()
@@ -69,6 +73,7 @@ def show_movies(current_user, id):
 @director_routes.route('/directors/<int:id>/updateDirector', methods=['PUT'])
 @token_required
 @role_required(UserRole.DIRECTOR)
+@swag_from('../../docs/directors/update.yml')
 def update_director(current_user, id):
   # Check if the ID in the URL matches the current director's ID
   director = Director.query.filter_by(user_id=current_user.id).first()
@@ -97,6 +102,7 @@ def update_director(current_user, id):
 @director_routes.route('/directors/<int:id>/createMovie', methods=['POST'])
 @token_required
 @role_required(UserRole.DIRECTOR)
+@swag_from('../../docs/directors/createMovie.yml')
 def create_movie(current_user, id):
   # Check if the ID in the URL matches the current director's ID
   director = Director.query.filter_by(user_id=current_user.id).first()

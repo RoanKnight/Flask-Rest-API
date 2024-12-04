@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flasgger import swag_from
 from app import db
 from app.models import UserRole, Customer, CustomerMovie, Movie
 from app.schemas.customer_schema import CustomerSchema
@@ -15,6 +16,7 @@ movie_schema = MovieSchema()
 @customer_routes.route('/customers', methods=['GET'])
 @token_required
 @role_required(UserRole.ADMIN)
+@swag_from('../../docs/customers/index.yml')
 def index(current_user):
   # Query all customers from the database
   customers = Customer.query.all()
@@ -30,6 +32,7 @@ def index(current_user):
 @customer_routes.route('/customers/<int:id>', methods=['GET'])
 @token_required
 @role_required(UserRole.ADMIN)
+@swag_from('../../docs/customers/show.yml')
 def show(current_user, id):
   # Query the customer by ID
   customer = Customer.query.get(id)
@@ -47,6 +50,7 @@ def show(current_user, id):
 @customer_routes.route('/customers/<int:id>/showMovies', methods=['GET'])
 @token_required
 @role_required(UserRole.CUSTOMER, UserRole.ADMIN)
+@swag_from('../../docs/customers/showMovies.yml')
 def show_movies(current_user, id):
     # Check if the current user is a customer and if the ID in the URL matches the current user's ID
   if current_user.role == UserRole.CUSTOMER:
@@ -84,6 +88,7 @@ def show_movies(current_user, id):
 @customer_routes.route('/customers/<int:id>/updateCustomer', methods=['PUT'])
 @token_required
 @role_required(UserRole.CUSTOMER)
+@swag_from('../../docs/customers/update.yml')
 def update_customer(current_user, id):
     # Check if the ID in the URL matches the current customer's ID
   customer = Customer.query.filter_by(user_id=current_user.id).first()

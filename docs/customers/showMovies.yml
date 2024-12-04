@@ -1,0 +1,58 @@
+tags:
+  - Customers
+security:
+  - Bearer: []
+parameters:
+- name: id
+  in: path
+  required: true
+  type: integer
+  description: The ID of the user to view their profile
+responses:
+  200:
+    description: A list of movies rented by the customer
+    schema:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            movies:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  title:
+                    type: string
+                    example: "Movie Title"
+                  duration:
+                    type: integer
+                    example: 120
+                  rating:
+                    type: string
+                    example: "7"
+                  director_id:
+                    type: integer
+                    example: 1
+                  deleted:
+                    type: boolean
+                    example: false
+  404:
+    description: Customer not found
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Customer not found"
+  403:
+    description: Unauthorized access
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Unauthorized access"

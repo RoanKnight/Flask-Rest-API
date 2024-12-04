@@ -1,0 +1,86 @@
+tags:
+  - Directors
+summary: Create a new movie for the director
+description: Allows a director to create a new movie. The movie is associated with the director and will have a random rating between 1 and 10. The year is set to the current year.
+operationId: createMovie
+parameters:
+  - in: path
+    name: id
+    required: true
+    schema:
+      type: integer
+      description: The director's unique ID.
+  - in: body
+    name: movie
+    required: true
+    schema:
+      type: object
+      properties:
+        title:
+          type: string
+          description: The title of the movie.
+          example: "Example Movie"
+        duration:
+          type: integer
+          description: The duration of the movie in minutes.
+          example: 120
+responses:
+  '201':
+    description: Movie successfully created
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            success:
+              type: object
+              properties:
+                movie:
+                  $ref: '#/components/schemas/Movie'
+  '400':
+    description: No input data provided or invalid input
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "No input data provided"
+  '403':
+    description: Unauthorized access, director ID mismatch
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Unauthorized access"
+  '404':
+    description: Director not found
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Director not found"
+components:
+  schemas:
+    Movie:
+      type: object
+      properties:
+        title:
+          type: string
+          description: The title of the movie.
+        duration:
+          type: integer
+          description: The duration of the movie in minutes.
+        rating:
+          type: integer
+          description: The rating of the movie (randomly generated between 1 and 10).
+        year:
+          type: integer
+          description: The year the movie was released (current year).

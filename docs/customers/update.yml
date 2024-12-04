@@ -1,0 +1,30 @@
+tags:
+  - Customers
+security:
+  - Bearer: []
+parameters:
+  - name: id
+    in: path
+    required: true
+    type: integer
+    description: The ID of the customer to update
+  - name: customer
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        date_of_birth:
+          type: string
+          example: '1990-01-01'
+responses:
+  200:
+    description: Customer updated successfully
+    schema:
+      $ref: '#/definitions/Customer'
+  400:
+    description: No input data provided
+  403:
+    description: Unauthorized access
+  404:
+    description: Customer not found

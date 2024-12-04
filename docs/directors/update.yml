@@ -1,0 +1,51 @@
+tags:
+  - Directors
+security:
+  - Bearer: []
+parameters:
+  - name: id
+    in: path
+    required: true
+    type: integer
+    description: The ID of the director to update
+  - name: director
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        website_url:
+          type: string
+          example: 'https://www.directorwebsite.com'
+responses:
+  200:
+    description: Director updated successfully
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            success:
+              type: object
+              properties:
+                director:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    website_url:
+                      type: string
+                      example: 'https://www.directorwebsite.com'
+                    user_id:
+                      type: integer
+                      example: 1
+                    deleted:
+                      type: boolean
+                      example: false
+  400:
+    description: No input data provided
+  403:
+    description: Unauthorized access
+  404:
+    description: Director not found
