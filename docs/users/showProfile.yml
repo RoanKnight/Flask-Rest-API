@@ -1,0 +1,19 @@
+tags:
+  - Users
+security:
+  - Bearer: []
+parameters:
+  - name: id
+    in: path
+    required: true
+    type: integer
+    description: The ID of the user to view their profile
+responses:
+  200:
+    description: The profile of the user
+    schema:
+      $ref: '#/definitions/User'
+  403:
+    description: Unauthorized access
+  404:
+    description: User not found

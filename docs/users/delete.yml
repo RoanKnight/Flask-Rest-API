@@ -1,0 +1,19 @@
+tags:
+  - Users
+security:
+  - Bearer: []
+parameters:
+  - name: id
+    in: path
+    required: true
+    type: integer
+    description: The ID of the user to delete
+responses:
+  200:
+    description: User and related records deleted successfully
+  403:
+    description: Admin cannot delete themselves
+  404:
+    description: User not found
+  401:
+    description: Unauthorized

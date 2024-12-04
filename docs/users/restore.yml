@@ -1,0 +1,19 @@
+tags:
+  - Users
+security:
+  - Bearer: []
+parameters:
+  - name: id
+    in: path
+    required: true
+    type: integer
+    description: The ID of the user to restore
+responses:
+  200:
+    description: User and related records restored successfully
+  404:
+    description: User not found
+  401:
+    description: Unauthorized
+  403:
+    description: Forbidden

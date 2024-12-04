@@ -1,0 +1,39 @@
+tags:
+  - Users
+security:
+  - Bearer: []
+parameters:
+  - name: id
+    in: path
+    required: true
+    type: integer
+    description: The ID of the user to update
+  - name: user
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Updated name
+        email:
+          type: string
+          example: updated@example.com
+        phone_number:
+          type: string
+          example: '456-566-4999'
+        address:
+          type: string
+          example: '123 Updated St'
+responses:
+  200:
+    description: User updated successfully
+    schema:
+      $ref: '#/definitions/User'
+  400:
+    description: No input data provided
+  403:
+    description: Unauthorized access
+  404:
+    description: User not found

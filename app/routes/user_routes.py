@@ -14,7 +14,7 @@ user_schema = UserSchema()
 @user_routes.route('/users', methods=['GET'])
 @token_required
 @role_required(UserRole.ADMIN)
-@swag_from('../../docs/users.yml')
+@swag_from('../../docs/users/index.yml')
 def index(current_user):
   # Query all users from the database
   users = User.query.all()
@@ -30,6 +30,7 @@ def index(current_user):
 @user_routes.route('/users/<int:id>', methods=['GET'])
 @token_required
 @role_required(UserRole.ADMIN)
+@swag_from('../../docs/users/show.yml')
 def show(current_user, id):
   # Query the user by ID
   user = User.query.get(id)
@@ -47,6 +48,7 @@ def show(current_user, id):
 # Route to show the profile of the current user
 @user_routes.route('/users/<int:id>/showProfile', methods=['GET'])
 @token_required
+@swag_from('../../docs/users/showProfile.yml')
 def show_profile_by_id(current_user, id):
     # Check if the ID in the URL matches the current user's ID
   if current_user.id != id:
@@ -68,6 +70,7 @@ def show_profile_by_id(current_user, id):
 # Route to update a the current user's profile
 @user_routes.route('/users/<int:id>/update', methods=['PUT'])
 @token_required
+@swag_from('../../docs/users/update.yml')
 def update_user(current_user, id):
     # Check if the ID in the URL matches the current user's ID
   if current_user.id != id:
@@ -128,6 +131,7 @@ def mark_user_and_related_records(user, deleted):
 @user_routes.route('/users/<int:id>/delete', methods=['DELETE'])
 @token_required
 @role_required(UserRole.ADMIN)
+@swag_from('../../docs/users/delete.yml')
 def delete_user(current_user, id):
   # Query the user by ID
   user = User.query.get(id)
@@ -148,6 +152,7 @@ def delete_user(current_user, id):
 @user_routes.route('/users/<int:id>/restore', methods=['PUT'])
 @token_required
 @role_required(UserRole.ADMIN)
+@swag_from('../../docs/users/restore.yml')
 def restore_user(current_user, id):
   # Query the user by ID
   user = User.query.get(id)
