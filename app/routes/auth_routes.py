@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
 import jwt
+from flasgger import swag_from
 
 from app import db
 from app.models import User, UserRole, Customer
@@ -16,7 +17,7 @@ user_schema = UserSchema()
 def generate_token(user):
   payload = {
       'user_id': user.id,
-      'exp': datetime.utcnow() + timedelta(hours=24)  # Token expiration time
+      'exp': datetime.utcnow() + timedelta(hours=24)
   }
   token = jwt.encode(payload, Config.JWT_USER_TOKEN, algorithm='HS256')
   return token
@@ -92,6 +93,7 @@ def register():
 
 # Route to handle user login
 @auth_routes.route('/login', methods=['POST'])
+# @swag_from('../../docs/auth.yml')
 def login():
   data = request.get_json()
   if not data:

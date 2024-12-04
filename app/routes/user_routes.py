@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flasgger import swag_from
 from app import db
 from app.models import User, UserRole, Director, Customer, Movie, CustomerMovie
 from app.schemas.user_schema import UserSchema
@@ -13,6 +14,7 @@ user_schema = UserSchema()
 @user_routes.route('/users', methods=['GET'])
 @token_required
 @role_required(UserRole.ADMIN)
+@swag_from('../../docs/users.yml')
 def index(current_user):
   # Query all users from the database
   users = User.query.all()

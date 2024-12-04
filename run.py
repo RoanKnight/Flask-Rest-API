@@ -1,4 +1,6 @@
+from flask import Flask, redirect, url_for
 from flask_cors import CORS
+from flasgger import Swagger
 from app.seeders.user_seeder import seed_users
 from app.seeders.director_seeder import seed_directors
 from app.seeders.customer_seeder import seed_customers
@@ -13,6 +15,13 @@ app = create_app()
 
 # Enable CORS
 CORS(app)
+
+swagger = Swagger(app)
+
+# Redirect the homepage to Swagger UI
+@app.route('/')
+def index():
+  return redirect(url_for('flasgger.apidocs'))
 
 # Command to seed the database
 @app.cli.command("seed-database")
