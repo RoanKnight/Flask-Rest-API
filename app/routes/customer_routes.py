@@ -1,6 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flasgger import swag_from
 from app import db
+from app.email import send_email
 from app.models import UserRole, Customer, CustomerMovie, Movie
 from app.schemas.customer_schema import CustomerSchema
 from app.schemas.movie_schema import MovieSchema
@@ -52,7 +53,7 @@ def show(current_user, id):
 @role_required(UserRole.CUSTOMER, UserRole.ADMIN)
 @swag_from('../../docs/customers/showMovies.yml')
 def show_movies(current_user, id):
-    # Check if the current user is a customer and if the ID in the URL matches the current user's ID
+  # Check if the current user is a customer and if the ID in the URL matches the current user's ID
   if current_user.role == UserRole.CUSTOMER:
     customer = Customer.query.filter_by(user_id=current_user.id).first()
     if not customer or customer.id != id:
@@ -90,7 +91,7 @@ def show_movies(current_user, id):
 @role_required(UserRole.CUSTOMER)
 @swag_from('../../docs/customers/update.yml')
 def update_customer(current_user, id):
-    # Check if the ID in the URL matches the current customer's ID
+  # Check if the ID in the URL matches the current customer's ID
   customer = Customer.query.filter_by(user_id=current_user.id).first()
   if not customer or customer.id != id:
     return jsonify({"message": "Unauthorized access"}), 403
@@ -123,7 +124,7 @@ def update_customer(current_user, id):
 @token_required
 @role_required(UserRole.CUSTOMER)
 def rent_movie(current_user, id):
-    # Check if the ID in the URL matches the current customer's ID
+  # Check if the ID in the URL matches the current customer's ID
   customer = Customer.query.filter_by(user_id=current_user.id).first()
   if not customer or customer.id != id:
     return jsonify({"message": "Unauthorized access"}), 403
@@ -154,6 +155,19 @@ def rent_movie(current_user, id):
   )
   db.session.add(customer_movie)
   db.session.commit()
+
+  # Get the email of the user corresponding to the current customer
+  user_email = customer.user.email
+
+  send_email(
+      "Movie rented successfully",
+      current_app.config['MAIL_DEFAULT_SENDER'],
+      recipients=[user_email],
+      text_body="You have rented a movie successfully.",
+      html_body="<p>You have rented a movie successfully.</p>",
+      attachments=None,
+      sync=False
+  )
 
   response = {
       "success": {

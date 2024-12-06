@@ -50,7 +50,7 @@ def show(current_user, id):
 @token_required
 @swag_from('../../docs/users/showProfile.yml')
 def show_profile_by_id(current_user, id):
-    # Check if the ID in the URL matches the current user's ID
+  # Check if the ID in the URL matches the current user's ID
   if current_user.id != id:
     return jsonify({"message": "Unauthorized access"}), 403
 
@@ -72,7 +72,7 @@ def show_profile_by_id(current_user, id):
 @token_required
 @swag_from('../../docs/users/update.yml')
 def update_user(current_user, id):
-    # Check if the ID in the URL matches the current user's ID
+  # Check if the ID in the URL matches the current user's ID
   if current_user.id != id:
     return jsonify({"message": "Unauthorized access"}), 403
 

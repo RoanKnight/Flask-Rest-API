@@ -13,8 +13,12 @@ def token_required(f):
     if not auth_header:
       return jsonify({"message": "Token is missing!"}), 401
 
-    # Use the header directly as the token
-    token = auth_header
+    # Split the header into parts
+    parts = auth_header.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+      return jsonify({"message": "Invalid authorization header format!"}), 401
+
+    token = parts[1]
     try:
       # Decode the token to get the user data
       data = jwt.decode(token, Config.JWT_USER_TOKEN, algorithms=['HS256'])

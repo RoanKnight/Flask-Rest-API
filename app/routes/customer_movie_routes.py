@@ -1,10 +1,11 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app, render_template
 from flasgger import swag_from
 from app import db
 from app.models import Movie, CustomerMovie, UserRole
 from app.schemas.customer_movie_schema import CustomerMovieSchema
 from app.schemas.movie_schema import MovieSchema
 from app.middleware import token_required, role_required
+from app.email import send_async_email, send_email
 
 # Create a Blueprint for customer-movie routes
 customer_movie_routes = Blueprint('customer_movie_routes', __name__)

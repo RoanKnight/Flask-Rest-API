@@ -12,7 +12,7 @@ parameters:
       properties:
         email:
           type: string
-          example: john@example.com
+          example: admin@example.com
         password:
           type: string
           example: password123

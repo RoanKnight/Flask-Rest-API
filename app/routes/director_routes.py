@@ -53,7 +53,7 @@ def show(current_user, id):
 @token_required
 @swag_from('../../docs/directors/showMovies.yml')
 def show_movies(current_user, id):
-    # Check if the ID in the URL matches the current director's ID
+  # Check if the ID in the URL matches the current director's ID
   director = Director.query.filter_by(user_id=current_user.id).first()
   if not director or director.id != id:
     return jsonify({"message": "Unauthorized access"}), 403
