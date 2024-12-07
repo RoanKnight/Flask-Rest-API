@@ -1,0 +1,8 @@
+Dear {{ customer.user.name }},
+
+Thank you for renting "{{ movie.title }}". Your movie is due on {{ due_date.strftime('%A, %d %B %Y') }}.
+
+Enjoy your movie!
+
+Sincerely,
+The Flask backend API team

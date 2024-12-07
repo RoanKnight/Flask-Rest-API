@@ -1,0 +1,63 @@
+tags:
+  - Customers
+security:
+  - Bearer: []
+parameters:
+  - name: id
+    in: path
+    required: true
+    type: integer
+    description: The ID of the customer renting the movie
+  - name: movie
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        movie_id:
+          type: integer
+          example: 1
+responses:
+  201:
+    description: Movie rented successfully
+    schema:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Movie rented successfully"
+  400:
+    description: No input data provided
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "No input data provided"
+  403:
+    description: Unauthorized access
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Unauthorized access"
+  404:
+    description: Movie not found
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Movie not found"
+  400:
+    description: Movie already rented
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Movie already rented"

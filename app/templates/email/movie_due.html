@@ -1,4 +1,5 @@
-<p>Dear</p>
-<p>We would like to inform you that your movie</p>
-<p>Sincerely</p>
-<p>The Flask beckend API team</p>
+<p>Dear {{ customer.user.name }},</p>
+<p>Thank you for renting "<strong>{{ movie.title }}</strong>". Your movie is due on <strong>{{ due_date.strftime('%A, %d %B %Y') }}</strong>.</p>
+<p>Enjoy your movie!</p>
+<p>Sincerely,</p>
+<p>The Flask backend API team</p>

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, render_template
 from flasgger import swag_from
 from app import db
 from app.email import send_email
@@ -123,8 +123,9 @@ def update_customer(current_user, id):
 @customer_routes.route('/customers/<int:id>/rentMovie', methods=['POST'])
 @token_required
 @role_required(UserRole.CUSTOMER)
+@swag_from('../../docs/customers/rentMovie.yml')
 def rent_movie(current_user, id):
-  # Check if the ID in the URL matches the current customer's ID
+    # Check if the ID in the URL matches the current customer's ID
   customer = Customer.query.filter_by(user_id=current_user.id).first()
   if not customer or customer.id != id:
     return jsonify({"message": "Unauthorized access"}), 403
@@ -143,7 +144,7 @@ def rent_movie(current_user, id):
   customer_movie = CustomerMovie.query.filter_by(
       customer_id=customer.id, movie_id=movie.id).first()
   if customer_movie:
-    return jsonify({"message": "Movie already rented"}), 400
+    return jsonify({"message": "This customer has alreday rented this movie"}), 400
 
   # Create a new CustomerMovie entry with a due date 30 days from now
   due_date = datetime.now() + timedelta(days=30)
@@ -163,8 +164,10 @@ def rent_movie(current_user, id):
       "Movie rented successfully",
       current_app.config['MAIL_DEFAULT_SENDER'],
       recipients=[user_email],
-      text_body="You have rented a movie successfully.",
-      html_body="<p>You have rented a movie successfully.</p>",
+      text_body=render_template(
+          'email/movie_due.txt', customer=customer, movie=movie, due_date=due_date),
+      html_body=render_template(
+          'email/movie_due.html', customer=customer, movie=movie, due_date=due_date),
       attachments=None,
       sync=False
   )
